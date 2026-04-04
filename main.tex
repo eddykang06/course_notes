@@ -46,7 +46,7 @@
 
 \section{Introduction}
 
-\section{Likelihood}
+\section{Models and Estimation}
 
 \section{Asymptotics}
 
@@ -54,7 +54,7 @@
 
 \section{Regression}
 
-\section{NEFs and sufficient statistics}
+\section{Exponential Families and Data Compression}
 
 \section{Hypothesis testing}
 
@@ -324,7 +324,7 @@ In the frequentist framework, we treated $\theta$ as a fixed value, not a random
 \begin{tcolorbox}[breakable, title = \textbf{Remark}: Properties of the MAP estimator] 
     Recall the definition of the MAP estimator:
     \begin{align*}
-        \hat\theta_\text{MAP} = \underset{c \in \Theta}{\text{argmax }}\pi(\theta|\textbf{y})
+        \hat\theta_\text{MAP} = \underset{\theta \in \Theta}{\text{argmax }}\pi(\theta|\textbf{y})
     \end{align*}
     We can express the posterior distribution in terms of the likelihood, prior, and some constant $c$.
     \begin{align*}
@@ -333,16 +333,185 @@ In the frequentist framework, we treated $\theta$ as a fixed value, not a random
     Thus, we can rewrite the MAP in terms of only the likelihood and prior:
     \begin{align*}
         \hat\theta_\text{MAP} 
-        &= \underset{c \in \Theta}{\text{argmax }}\log \pi(\theta|\textbf{y})\\
-        &=  \underset{c \in \Theta}{\text{argmax }} \left\{c + \log \mathcal{L}(\theta;\textbf{y}) + \log \pi(\theta)\right\}\\
-        &= \underset{c \in \Theta}{\text{argmax }} \left\{\log \mathcal{L}(\theta;\textbf{y}) + \log \pi(\theta)\right\}
+        &= \underset{\theta \in \Theta}{\text{argmax }}\log \pi(\theta|\textbf{y})\\
+        &=  \underset{\theta \in \Theta}{\text{argmax }} \left\{c + \log \mathcal{L}(\theta;\textbf{y}) + \log \pi(\theta)\right\}\\
+        &= \underset{\theta \in \Theta}{\text{argmax }} \left\{\log \mathcal{L}(\theta;\textbf{y}) + \log \pi(\theta)\right\}
     \end{align*}
-    Note that is our prior is Uniform (constant with respect to $\theta) $, then the MAP is simply the MLE!
+    Note that if our prior is Uniform (constant with respect to $\theta) $, then the MAP is simply the MLE!
 \end{tcolorbox}
 
 \subsection{Credible intervals}
 
+\noindent In frequentist statistics, we had the confidence interval. For Bayesian statistics, we have the credible interval. 
+
+\medskip
+
+\begin{tcolorbox}[breakable, title= \textbf{Definition}: Credible interval]
+    We define a $1-\alpha$ credible interval for $\theta$ using the constants $L(\textbf{y})$ and $U(\textbf{y})$.
+    \begin{align*}
+        \Prob\left\{L(\textbf{y}) \leq \theta \leq U(\textbf{y})|\textbf{y}\right\} = 1 -\alpha
+    \end{align*}
+\end{tcolorbox}
+
+\medskip
+
+\noindent The credible interval is exactly the opposite of a confidence interval. In a confidence interval, $\theta$ was fixed and our bounds $L(\textbf{Y})$ and $U(\textbf{Y})$ were r.v.s. In our credible interval,  $\theta$ is the r.v. and $L(\textbf{y})$ and $U(\textbf{y})$ are constants. In the Bayesian lens, we can make a direct probability statement about where $\theta$ is located!
+
+\medskip
+
+\noindent We can define a credible interval using the quantile function as we previously did for a confidence interval.
+
+\begin{tcolorbox}[breakable, title = \textbf{Remark}: Defining credible interval with quantiles]
+    In general, for a $1-\alpha$ credible interval, we can define the interval
+    \begin{align*}
+        [Q_{\theta|\textbf{y}}(\alpha/2), Q_{\theta|\textbf{y}}(1- \alpha/2)]
+    \end{align*}
+    This is equivalent to us taking a central "slice" of the posterior distribution $\pi(\theta|\textbf{y})$, for which the area under the curve is $1-\alpha$.
+\end{tcolorbox}
+
+\medskip
+
 \subsection{Computing Bayesian estimators via simulation}
 
-\section{}
+\noindent Although Bayesian estimators have nice probablisitic properties and are straightforward to analyze in theory, they are difficult to actually simulate. They often involve hard integrals like the following:
+
+\medskip
+
+\begin{tcolorbox}[breakable, title= \textbf{Example}: Computing the posterior mean]
+Calculating Bayesian estimators often leads to computational challenges, such as very hard integrals!
+    \begin{align*}
+        \E[\theta|\textbf{y}] = \int\theta\pi(\theta|\textbf{y})d\theta = \dfrac{\int\theta \pi(\theta)\mathcal{L}(\theta;\textbf{y})d\theta}{\int\pi(\theta)\mathcal{L}(\theta;\textbf{y})d\theta}
+    \end{align*}
+\end{tcolorbox}
+
+\medskip
+
+\noindent We need a better way to do this. Simulation seems promising. We know that Markov-chain Monte Carlo (MCMC) can simulate draws from a given continuous distribution $f$. We can apply this to our posterior distribution to obtain estimates of our Bayesian estimators.
+
+\medskip
+
+\begin{tcolorbox}[breakable, title= \textbf{Example}: Bayesian simulation]
+    Say have the posterior distribution $\pi(\theta|\textbf{y})$. We want to compute 2 Bayesian estimators: the posterior mean $\E[\theta|\textbf{y}]$ and the posterior median $Q_{\theta|\textbf{y}}(0.5)$. However, these integrals are too hard! We simply sample draws from $\pi(\theta|\textbf{y})$ using MCMC:
+    \begin{align*}
+        \theta_1^*, \dots,\theta_B^* \sim \theta|y
+    \end{align*}
+    Then we estimate the posterior mean and posterior median from the data!
+    \begin{align*}
+        \E[\theta|\textbf{y}] \approx \dfrac{1}{B}\sum_{b=1}^{B}\theta_b^*, \ Q_{\theta|\textbf{y}}(0.5) \approx \hat Q_{\lceil 0.5B\rceil}(0.5)
+    \end{align*}
+\end{tcolorbox}
+
+\medskip
+
+\noindent Note that this strategy is invariant under reparameterization of $\theta$.
+
+\medskip
+
+\begin{tcolorbox}[breakable, title= \textbf{Example}: Bayesian simulation using reparameterization]
+    Say our friend wants to calculated the mean posterior mean and median of $\lambda$ instead of $\theta$, where $\lambda = h(\theta)$. Then, we simply apply the transformation $h$ to our simulated draws from $\pi(\theta|\textbf{y})$.
+    \begin{align*}
+        \lambda_b^* = h(\theta_b^*) \text{ for }b=1,\dots, B
+    \end{align*}
+    Then, we again just estimate the posterior mean and posterior median from the data.
+    \begin{align*}
+        \E[\lambda|\textbf{y}] \approx \dfrac{1}{B}\sum_{b=1}^{B}h(\theta_b^*), \ Q_{\lambda|\textbf{y}}(0.5) \approx \hat Q_{\lceil 0.5B\rceil}(0.5)
+    \end{align*}
+    We can do all of this without worrying about change of variables or the Jacobian, which is very convenient.
+    
+\end{tcolorbox}
+
+\medskip
+
+\noindent Simulation is especially powerful when our parameter $\theta$ is multivariate: $\theta = (\psi, \lambda)$. Suppose we want to study $\lambda$ alone.
+
+\begin{tcolorbox}[breakable, title= \textbf{Example}: Bayesian simulation using marginalization]
+    Suppose $\theta = (\psi,\lambda)$, and we've simulated draws from $\pi(\theta|\textbf{y})$:
+    \begin{align*}
+        \theta_1^*,\dots,\theta_B^* = \binom{\psi_1^*}{\lambda_1^*} ,\dots,\binom{\psi_B^*}{\lambda_B^*} \sim \theta|\textbf{y}
+    \end{align*}
+    We would like to study $\lambda$, so we want $\pi(\lambda|\textbf{y}) = \int\pi(\psi,\lambda|\textbf{y})d\textbf{y}$ by marginalization. This is very hard to compute. So, instead, we marginalize by just throwing out the $\psi_b^*$. We're left with
+    \begin{align*}
+        \lambda_1^*,\dots,\lambda_B^* \sim \lambda|\textbf{y}
+    \end{align*}
+    Now, we can estimate quantities such as $\E[\lambda|\textbf{y}]$ or $Q_{\lambda|\textbf{y}}(0.5)$ just as we did above.
+\end{tcolorbox}
+
+\subsection{Conjugate priors}
+
+\noindent It turns out that some priors and likelihoods work especially well together if they have a particular distribution. We've seen conjugacy in Stat 110 already, so let's explore it deeper.
+
+\medskip
+
+\begin{tcolorbox}[breakable, title = \textbf{Definition}: Conjugate prior]
+    Recall Bayes' rule:
+    \begin{align*}
+        \pi(\theta|\textbf{y}) \propto \pi(\theta)\mathcal{L}(\theta;\textbf{y})
+    \end{align*}
+    A family of priors $\pi(\theta)$ is \underline{conjugate} for a statistical model if choosing a prior in that family leads to a posterior also in the same family.
+\end{tcolorbox}
+
+\medskip
+
+\noindent We've seen a couple examples of this in the past.
+
+\medskip
+
+\begin{tcolorbox}[breakable, title = \textbf{Example}: Beta-Binomial and Gamma-Poisson conjugacy]
+    Beta-Binomial conjugacy:
+    \begin{align*}
+        Y|p \sim \Bin(n,p), \ p \sim \text{Beta}(a,b) \Rightarrow p|(Y=y) \sim \text{Beta}(a+y, b+n-y)
+    \end{align*}
+    Gamma-Poisson conjugacy:
+    \begin{align*}
+        Y|\lambda\sim \Pois(\lambda), \ \lambda \sim \text{Gamma}(r_0, b_0) \Rightarrow \lambda|(Y=y) \sim \text{Gamma}(r_0+y, b_0+1)
+    \end{align*}
+\end{tcolorbox}
+
+\medskip
+
+\noindent Next, we extend this to examine conjugacy involving the Normal.
+
+\medskip
+
+\begin{tcolorbox}[breakable, title = \textbf{Example 9.5.4 in textbook}: Normal-Normal conjugacy (single observation)]
+    Suppose we have a single observation $Y$. We define $Y|\mu\sim \N(\mu,\sigma^2)$ and $\mu \sim \N(m_0, \tau_0^2)$. Assume $\sigma^2, m_0, \tau_0^2$ known. We want to find the posterior $\mu|y$. By Bayes' rule,
+    \begin{align*}
+        \pi(\mu|y) = c\cdot \pi(\mu)\mathcal{L}(\mu;y) \ \text{where $c$ is a constant}
+    \end{align*}
+    We examine the log posterior,
+    \begin{align*}
+        \log \pi(\mu|y) 
+        &= c + \log \pi(\mu) + \log \mathcal{L}(\theta;y)\\
+        &= c'-\dfrac{1}{2\tau_0^2}(\mu-m_0)^2 + \dfrac{1}{2\sigma^2}(y-\mu)^2\\
+        &= c'' -\dfrac{\mu^2}{2}\left(\dfrac{1}{\sigma^2}-\dfrac{1}{\tau_0^2}\right) + \mu\left(\dfrac{y}{\sigma^2} + \dfrac{m_0}{\tau_0^2}\right)\\
+        &= c'' - \dfrac{\mu^2}{2\tau_1^2}+\dfrac{\mu}{\sigma_1^2}m_1
+        \end{align*}
+        Here, we've made the following substitutions:
+        \begin{align*}
+            \tau_1^{-2} = \sigma^{-2} + \tau_0^{-2}, \ m_1 = \tau_1^2\left(\dfrac{y}{\sigma^2} + \dfrac{m_0}{\tau_0^2}\right)
+        \end{align*}
+        Thus, pattern-matching to the log density of the Normal,
+        \begin{align*}
+            \boxed{\mu|y \sim \N(m_1,\tau_1^2)}
+        \end{align*}
+        Note that the $\sigma^{-2}$ and $\tau_0^2$ are the \underline{precisions}, meaning that the precisions of the likelihood and prior add!
+\end{tcolorbox}
+
+\medskip
+We can utilize the same logic to examine Normal-Normal conjugacy for $n$ datapoints.
+
+\medskip
+
+\medskip
+\begin{tcolorbox}[breakable, title = \textbf{Theorem 9.5.5 in textbook}: Normal-normal conjugacy ($n$ observations)]
+    We generalize the above to $n$ observations. Suppose we have data $Y_1,\dots,Y_n$, where $Y_j|\mu \overset{\text{i.i.d.}}{\sim} \N(\mu,\sigma^2)$ and $\mu \sim \N(m_0,\tau_0^2)$. Then, 
+\end{tcolorbox}
+\subsection{Predictive posterior}
+
+\subsection{Hierarchical models}
+\noindent 
+
+\section{Sampling and resampling}
+
+\section{Causal inference}
 \end{document}
