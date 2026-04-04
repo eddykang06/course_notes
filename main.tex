@@ -126,8 +126,8 @@ We'll now cover hypothesis testing. Say we've collected data $\textbf{Y} = \text
 
 \medskip
 
-\begin{tcolorbox}[breakable, title = "\textbf{Definition}: Size"]
-    The size $\alpha$ of a testing procedure if defined as follows:
+\begin{tcolorbox}[breakable, title = \textbf{Definition}: Size]
+    The size $\alpha$ of a testing procedure is defined as follows:
     \begin{align*}
         \alpha = \underset{\theta \in \Theta_0}{\max} \beta(\theta)
     \end{align*}
@@ -158,8 +158,191 @@ This would mean that we reject the null often when the alternative is true, and 
 \subsection{p-values}
 
 \subsection{Likelihood-based tests}
+
 \section{Bayesian statistics}
 
-Now, we
+\subsection{Bayesian thinking}
+In the frequentist framework, we treated $\theta$ as a fixed value, not a random variable. This meant that we had to a lot of bending-over-backwards to avoid making probability statements about $\theta$. For example, when we defined a CI for $\theta$, the interval itself was random! Under the Bayesian framework we will treat $\theta$ as an r.v., then write down a "full probability model." 
 
+\medskip
+
+\noindent We'll work with a parametric model $F_{\textbf{Y}|\theta}$ for data $\textbf{Y}$. Note the conditioning bar, which we can use instead of ; since $\theta$ is now an r.v. Bayesian thinking allows us to default back to probability theory, following the two principles below:
+\begin{enumerate}
+    \item Always obey probabiity laws
+    \item Model all uncertainty using probability
+\end{enumerate}
+
+\noindent Bayesian statistics is based on Bayes' rule. The idea is to use Bayes' rule to obtain the posterior distribution of $\theta$, the belief we have in $\theta$ after having seen the data $\textbf{y}$.
+
+\medskip
+
+\begin{tcolorbox}[breakable, title = \textbf{Definition}: Posterior distribution]
+    We apply Bayes' rule to obtain the \underline{posterior} distribution of $\theta$, denoted $\pi(\theta|\textbf{y})$.
+    \begin{align*}
+        \pi(\theta |\textbf{y}) = \dfrac{f(\textbf{y}|\theta)\pi(\theta)}{f(\textbf{y})} \propto \mathcal{L}(\theta;\textbf{y})\pi(\theta)
+    \end{align*}
+    Note that since the \underline{marginal likelihood} $f(\textbf{y})$ is a normalizing constant, we can write the posterior as proportional to the \underline{likelihood} times the \underline{prior}, which quantitifes our belief in $\theta$ prior to seeing the data. The marginal likelihood can always be calculated:
+    \begin{align*}
+        f(\textbf{y}) = \int_{-\infty}^{\infty} f(\textbf{y}|\theta)\pi(\theta)d\theta
+    \end{align*}
+    
+\end{tcolorbox}
+\medskip
+
+\noindent What's nice about the Bayesian approach is that there's no controversy to our calculation above. Once we've defined a prior $\pi(\theta)$ and a model $f_{\textbf{Y}|\theta} (\textbf{y})$, we simply apply the laws of probability. The caveat is that writing down a prior and a model is a high barrier of entry, and is difficult in practice.
+
+\medskip
+\noindent Let's take a look at an example of how Bayes' rule can be applied to obtain the posterior distribution $\theta |\textbf{y}$.
+
+\medskip
+
+\begin{tcolorbox}[breakable, title = \textbf{Example 9.2.3 in textbook}: Single Bernoulli trial with Beta prior]
+    Assume that our data is $Y_1$. Our model is $Y_1|\theta \sim \Bern(\theta)$, and our prior is $\theta \sim \text{Beta}(\alpha,\beta)$. Let's write down the likelihood function:
+    \begin{align*}
+        \mathcal{L}(\theta;Y_1) = \Prob(Y_1 = y_1|\theta)= \theta^{y_1}(1-\theta)^{1-y_1}
+    \end{align*}
+    Thus, applying the Beta PDF and Bayes' rule, we can write down the posterior distribution $\pi(\theta|\textbf{y})$.
+    \begin{align*}
+        \pi(\theta|\textbf{y}) 
+        &\propto \mathcal{L}(\theta;Y_1)\pi(\theta) \\
+        &\propto \left\{\theta^{y_1}(1-\theta)^{1-y_1}\right\}\left\{\theta^{\alpha-1}(1-\theta)^{\beta-1}\right\} \text{ by Beta PDF}\\
+        &= \theta^{y_1 +\alpha -1}(1-\theta)^{1-y_1+\beta+1}
+    \end{align*}
+    This is simply the $\text{Beta}(\alpha +y_1, \beta + 1 - y_1)$ PDF, without the normalizing constant! Thus, we have the following result.
+    \begin{align*}
+        \boxed{\theta|\textbf{y}\sim \text{Beta}(\alpha + y_1, \beta + 1 - y_1)}
+    \end{align*}
+    Note that this result is an example of \underline{Beta-Binomial} conjugacy! When a Beta prior is fed through a Binomial model, we still get a Beta posterior.
+\end{tcolorbox}
+
+\medskip
+
+\noindent We can actually generalize the result above to $n$ Bernoulli datapoints:
+
+\medskip
+
+\begin{tcolorbox}[breakable, title= \textbf{Example 9.2.3 in textbook (cont.)}: $n$ ind. Bernoulli trials with Beta prior]
+    Assume our data is $\textbf{Y} = Y_1,\dots,Y_n$, where $Y_j |\theta\overset{\text{i.i.d.}}{\sim} \Bern(\theta)$, with prior $\theta \sim \text{Beta}(\alpha, \beta)$.
+    We have the likelihood function below:
+    \begin{align*}
+        \mathcal{L}(\theta, \textbf{Y}) 
+        &= \prod_{j=1}^{n}f_{Y_1|\theta}(y_1) \ \text{by ind.}\\
+        &= \theta^{n\bar{y}}(1-\theta)^{n(1-\bar{y})} \ \text{by Bern. PMF}
+    \end{align*}
+    Plugging in this likelihood into the expression for $\pi(\theta|\textbf{y})$, we obtain the result
+    \begin{align*}
+        \pi(\theta|\textbf{y}) = \theta^{\alpha+n\bar{y}-1 }(1-\theta)^{\beta + n(1-\bar{y}) - 1}
+    \end{align*}
+    Thus, by the Beta PDF,
+    \begin{align*}
+        \boxed{\theta|\textbf{y} \sim \text{Beta}(\alpha +n\bar{y}, \beta + n(1-\bar{y}))}
+    \end{align*}
+\end{tcolorbox}
+
+\medskip
+
+\noindent Priors must be constructed carefully. Note the following:
+
+\medskip
+
+\begin{tcolorbox}[breakable, title = \textbf{Remark}: Cromwell's rule]
+    ``When constructing a prior, don't set $\pi(\theta)$ for any value of $\theta$!'' This is because if we let the prior be 0 anywhere, the posterior $\theta|\textbf{y}$ will always be 0 no matter how much the data might suggest that that value of $\theta$ is a good fit for the data.
+\end{tcolorbox}
+
+\subsection{Bayesian point estimators}
+
+\noindent The ``output'' of the Bayesian workflow is the posterior distribution $\pi(\theta|\textbf{y})$. But, it's often easier to work with point values rather than the entire posterior distribution. In other words, we want a clear summary of our output. Some common Bayesian point estimators are listed below:
+
+\medskip
+
+\begin{tcolorbox}[breakable, title = \textbf{Definition}: \text{Posterior mean, median, mode}]
+    Suppose we've obtained the posterior distribution $\pi(\theta|\textbf{y})$. We define the following quantities.
+    \begin{align*}
+        &1) \text{ \underline{Posterior mean}: }\E[\theta|\textbf{y}]  = \int_{\infty}^{\infty}\theta\pi(\theta|\textbf{y})d\theta\\
+        &2) \text{ \underline{Posterior median}: }
+        Q_{\theta|\textbf{y}}(0.5)\\
+        &3) \text{ \underline{Posterior mode}: }
+        \underset{\theta \in \Theta}{\text{argmax }}\pi(\theta|\textbf{y})
+    \end{align*}
+    The posterior mode is also called the \underline{maximum \emph{a posteriori} (MAP) estimator}.
+\end{tcolorbox}
+
+\medskip
+\noindent Often, we'll define a Bayesian estimator $\hat\theta$ as a quantity that minimizes the posterior expected loss function, a function we defined to measure the distance between our true $\theta$ and our estimate $\hat\theta$.
+
+\medskip
+\begin{tcolorbox}[breakable, title = \textbf{Definition}: Posterior expected loss]
+    We construct a general Bayesian estimator $\hat\theta_\text{Bayes}$ using a \underline{loss function} Loss$(\theta,\hat\theta)$. 
+    \begin{align*}
+        \hat\theta_\text{Bayes}= \underset{\hat\theta \in \Theta}{\text{argmin }}\E[\text{Loss}(\theta,\hat\theta)|\textbf{y}]
+    \end{align*}
+    Our estimator minimizes the posterior expected loss: the expected loss given the data $\textbf{y}$, which can be computed using the posterior distribution $\theta|\textbf{y}$.
+\end{tcolorbox}
+
+\medskip
+
+\noindent We can actually derive the posterior mean and mode using the definition above.
+
+\medskip
+\begin{tcolorbox}[breakable, title = \textbf{Theorem 9.3.3 in textbook}: \text{Origins of posterior mean, median}]
+    If we use the \underline{squared-error loss}, $\text{Loss}(\theta,\hat\theta) =(\theta-\hat\theta)^2$, then the posterior mean minimizes the posterior expected loss:
+    \begin{align*}
+        \E[\theta|\textbf{y}] = \underset{c \in \Theta}{\text{argmin }}\E[(\theta-c)^2|\textbf{y}]
+    \end{align*}
+    If we used the \underline{absolute error loss}, $\text{Loss}(\theta,\hat\theta) = |\theta-\hat\theta|$, then the posterior median minimizes the posterior expected loss:
+    \begin{align*}
+        Q_{\theta|\textbf{y}}(0.5) = \underset{c \in \Theta}{\text{argmin }}\E[|\theta-c||\textbf{y}]
+    \end{align*}
+\end{tcolorbox}
+
+\medskip
+\noindent Using some clever tricks, we can also derive a statement about the posterior mean for Gaussian data that generalizes to all possible priors.
+
+\medskip
+
+\begin{tcolorbox}[breakable, title = \textbf{Example 9.3.4 in textbook}: Tweedie's formula]
+    Assume Gaussian data $Y$, such that
+    \begin{align*}
+        f_{Y|\theta}(y)  = \dfrac{1}{\sqrt{2\pi\sigma^2}}\exp\left\{-\dfrac{1}{2\sigma^2}(y-\theta)^2\right\}
+    \end{align*}
+    Then for any prior on $\theta$, the following statement holds:
+    \begin{align*}
+        \boxed{\E[\theta|y]= y + \sigma^2 \dfrac{\partial\log f(y)}{\partial y}}
+    \end{align*}
+\end{tcolorbox}
+
+\medskip
+
+\noindent Tweedie's formula is fascinating, because it means that for Gaussian data, we don't need any information about $\theta$ to obtain the posterior mean! 
+
+\medskip
+
+\noindent Next, let's explore some properties of the MAP estimator. This estimator is convenient because we don't ever need to compute the normalizing constant. This is because we don't need the posterior distribution $\theta|\textbf{y}$. We can simply compute the MAP estimate using the likelihood and prior.
+
+\medskip
+
+\begin{tcolorbox}[breakable, title = \textbf{Remark}: Properties of the MAP estimator] 
+    Recall the definition of the MAP estimator:
+    \begin{align*}
+        \hat\theta_\text{MAP} = \underset{c \in \Theta}{\text{argmax }}\pi(\theta|\textbf{y})
+    \end{align*}
+    We can express the posterior distribution in terms of the likelihood, prior, and some constant $c$.
+    \begin{align*}
+        \pi(\theta|\textbf{y}) \propto \mathcal{L}(\theta;\textbf{y})\pi(\theta) \Rightarrow\log\pi(\theta|\textbf{y}) = c + \log \mathcal{L}(\theta;\textbf{y}) + \log \pi(\theta)
+    \end{align*}
+    Thus, we can rewrite the MAP in terms of only the likelihood and prior:
+    \begin{align*}
+        \hat\theta_\text{MAP} 
+        &= \underset{c \in \Theta}{\text{argmax }}\log \pi(\theta|\textbf{y})\\
+        &=  \underset{c \in \Theta}{\text{argmax }} \left\{c + \log \mathcal{L}(\theta;\textbf{y}) + \log \pi(\theta)\right\}\\
+        &= \underset{c \in \Theta}{\text{argmax }} \left\{\log \mathcal{L}(\theta;\textbf{y}) + \log \pi(\theta)\right\}
+    \end{align*}
+    Note that is our prior is Uniform (constant with respect to $\theta) $, then the MAP is simply the MLE!
+\end{tcolorbox}
+
+\subsection{Credible intervals}
+
+\subsection{Computing Bayesian estimators via simulation}
+
+\section{}
 \end{document}
